@@ -9,4 +9,5 @@ def group_redirect(request):
         return redirect('/employees/')
     else:
         # If user is in neither group, get sent back to home
+        print(request.user)
         return render(request, 'home.html')
