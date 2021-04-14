@@ -1,9 +1,9 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
+from django.urls import reverse
+
+from . import helpers
 from .models import Customer
-
-
-# Create your views here.
 
 # TODO: Create a function for each path created in customers/urls.py. Each will need a template as well.
 
@@ -16,7 +16,7 @@ def index(request):
     user = request.user
     customer = Customer.objects.filter(user=user)
     if not customer:
-        create(request, user)
+        return render(request, 'customers/create.html')
     else:
         context = {
             'customer': customer
@@ -24,17 +24,22 @@ def index(request):
         return render(request, 'customers/index.html', context)
 
 
-def create(request, user):
+def create(request):
     # assign user as customer user foreign key
     # add customer name to customer object
     # use helper function to add address to new address object
     # use helper function to generate address and add as foreign key
     if request.method == 'POST':
+        user = request.user
         name = request.POST.get('name')
-
         customer = Customer()
         customer.user = user
         customer.name = name
-
-
-
+        customer.save()
+        helpers.create_address(customer, request)
+        helpers.create_account(customer)
+        return render(request, 'customers/index.html', context={
+            'customer': customer
+        })
+    else:
+        return render(request, 'customers/create.html')
